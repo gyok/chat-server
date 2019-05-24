@@ -37,6 +37,7 @@ void ChatServer::clientsThread() {
         mutex.lock();
         for (array::iterator b = clients.begin(), e = clients.end(); b != e; b++) {
             msg = (*b)->ReadRequest();
+            if (!handleMsg(msg, clients, (*b))) break;
             if (msg != "") {
                 sendToAllClients(clients, "[" + (*b)->GetLogin() + "]: " + msg);
             }
@@ -64,4 +65,23 @@ void ChatServer::sendToAllClients(array & clients, std::string msg) {
     for (array::iterator b = clients.begin(), e = clients.end(); b != e; b++) {
         (*b)->SendRequest(msg);
     }
+}
+
+bool ChatServer::handleMsg(std::string msg, array & clients, clientPtr client) {
+    if (client->GetLogin() != "Admin") return true;
+
+    auto delimiter = ' ';
+    auto spacePos = msg.find(delimiter);
+    auto firstWord = msg.substr(0, spacePos);
+
+    if (firstWord != "@kick") return true;
+
+    auto userToKick = msg.substr(spacePos + 1, msg.length());
+    auto filteredClients = std::remove_if(clients.begin(), clients.end(), [&userToKick](clientPtr client) {
+        if (client->GetLogin() != userToKick) return false;
+        client->Stop();
+        return true;
+    });
+    clients.erase(filteredClients, clients.end());
+    return false;
 }

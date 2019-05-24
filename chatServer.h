@@ -27,6 +27,7 @@ private:
     bool static loginClient(clientPtr, std::string &);
     void static notifyAboutNewUser(array &, std::string);
     void static sendToAllClients(array &, std::string);
+    bool static handleMsg(std::string, array &, clientPtr);
 };
 
 
