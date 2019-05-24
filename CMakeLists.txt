@@ -7,7 +7,7 @@ set(Boost_USE_STATIC_LIBS ON)
 set(BOOST_COMPONENTS
     asio
     thread
-    algorithm)
+    chrono)
 
 set(SOURCE_TALKTOCLIENT talkToClient.cpp)
 set(HEADER_TALKTOCLIENT talkToClient.h)
@@ -21,4 +21,4 @@ add_library(talkToClient STATIC ${SOURCE_TALKTOCLIENT} ${HEADER_TALKTOCLIENT})
 
 add_executable(${PROJECT_NAME} "main.cpp")
 
-target_link_libraries(${PROJECT_NAME} server talkToClient Boost::thread)
+target_link_libraries(${PROJECT_NAME} server talkToClient Boost::thread Boost::chrono)

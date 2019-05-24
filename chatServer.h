@@ -4,6 +4,7 @@
 #define PORT 2001
 
 #include <boost/thread.hpp>
+#include <boost/chrono.hpp>
 #include <boost/asio.hpp>
 #include "talkToClient.h"
 

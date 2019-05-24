@@ -6,10 +6,10 @@ std::recursive_mutex ChatServer::mutex;
 
 void ChatServer::Run() {
     boost::thread_group threads;
-    acceptThread();
-    //threads.create_thread(acceptThread);
-    //threads.create_thread(clientsThread);
-    //threads.join_all();
+    //acceptThread();
+    threads.create_thread(acceptThread);
+    threads.create_thread(clientsThread);
+    threads.join_all();
 }
 
 void ChatServer::acceptThread() {
@@ -20,17 +20,29 @@ void ChatServer::acceptThread() {
         std::string login;
         if (loginClient(client, login)) {
             mutex.lock();
+            client->SetLogin(login);
             clients.push_back(client);
             notifyAboutNewUser(clients, login);
             mutex.unlock();
         } else {
-            acceptor.close();
+            client->Stop();
         }
     }
 }
 
 void ChatServer::clientsThread() {
-
+    std::string msg;
+    while (true) {
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+        mutex.lock();
+        for (array::iterator b = clients.begin(), e = clients.end(); b != e; b++) {
+            msg = (*b)->ReadRequest();
+            if (msg != "") {
+                sendToAllClients(clients, "[" + (*b)->GetLogin() + "]: " + msg);
+            }
+        }
+        mutex.unlock();
+    }
 }
 
 bool ChatServer::loginClient(clientPtr client,

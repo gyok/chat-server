@@ -17,12 +17,17 @@ public:
     ip::tcp::socket & Socket();
     std::string ReadRequest();
     void SendRequest(std::string);
+    std::string GetLogin();
+    void SetLogin(std::string);
+    void Stop();
 
 private:
     ip::tcp::socket _socket;
     char _buff[MAX_BUFF_SIZE];
+    std::string _login;
+    size_t _alreadyRead;
 
-    void stop();
+    size_t readComplete(const boost::system::error_code &, size_t);
 };
 
 #endif // TALKTOCLIENT_H
