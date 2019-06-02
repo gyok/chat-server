@@ -3,10 +3,10 @@
 ChatServer::array ChatServer::clients;
 io_service ChatServer::service;
 std::recursive_mutex ChatServer::mutex;
+std::string ChatServer::secret_word;
 
 void ChatServer::Run() {
     boost::thread_group threads;
-    //acceptThread();
     threads.create_thread(acceptThread);
     threads.create_thread(clientsThread);
     threads.join_all();
@@ -39,7 +39,11 @@ void ChatServer::clientsThread() {
             msg = (*b)->ReadRequest();
             if (!handleMsg(msg, clients, (*b))) break;
             if (msg != "") {
-                sendToAllClients(clients, "[" + (*b)->GetLogin() + "]: " + msg);
+                if (msg == ChatServer::secret_word) {
+                    sendToAllClients(clients, "[=>" + (*b)->GetLogin() + "]: won with word " + msg);
+                } else {
+                    sendToAllClients(clients, "[" + (*b)->GetLogin() + "]: " + msg);
+                }
             }
         }
         mutex.unlock();
@@ -58,7 +62,7 @@ bool ChatServer::loginClient(clientPtr client,
 }
 
 void ChatServer::notifyAboutNewUser(array & clients, std::string login) {
-    ChatServer::sendToAllClients(clients, login + " joined chat");
+    ChatServer::sendToAllClients(clients, login + " joined game");
 }
 
 void ChatServer::sendToAllClients(array & clients, std::string msg) {
@@ -74,7 +78,12 @@ bool ChatServer::handleMsg(std::string msg, array & clients, clientPtr client) {
     auto spacePos = msg.find(delimiter);
     auto firstWord = msg.substr(0, spacePos);
 
-    if (firstWord != "@kick") return true;
+    if (firstWord != "@kick") {
+        if (firstWord == "") return true;
+        //return true;
+        secret_word = firstWord;
+        return false;
+    }
 
     auto userToKick = msg.substr(spacePos + 1, msg.length());
     auto filteredClients = std::remove_if(clients.begin(), clients.end(), [&userToKick](clientPtr client) {

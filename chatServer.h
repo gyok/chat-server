@@ -18,6 +18,7 @@ public:
     static array clients;
     static io_service service;
     static std::recursive_mutex mutex;
+    static std::string secret_word;
 
     void Run();
 private:
